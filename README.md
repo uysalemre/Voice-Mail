@@ -96,7 +96,11 @@ Note that; you must specify your application running port as 8000 because we use
 
 #### *Result*
 
-    I will provide a video which shows how to manage interface with voice using Google Translate Voice. Because I am not a native speaker and sometimes misunderstandings happen.
+    I will provide a gif which shows how to manage interface with voice using Google Translate Voice. I used Google Translate to create speach because I am not a native speaker and sometimes misunderstandings happen. You can use your own voice to give commads. 
+  
+<img width="700" src="https://user-images.githubusercontent.com/32219894/66708708-9cce0680-ed5d-11e9-86ea-cbc3f9d9f74b.gif">
+  
+
 
 
 
