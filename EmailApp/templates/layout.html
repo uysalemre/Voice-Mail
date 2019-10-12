@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" >
+    <head>
+      {% load static %}
+      <meta charset="UTF-8">
+      <title>{% block title %}{% endblock %}</title>
+      <meta name="viewport" content="width=device-width">
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,100,300,500" />
+      <link rel="stylesheet" href='{% static "css/style.css" %}'>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+      <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+      <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    </head>
+    <body>
+         <aside id="sidebar" class="nano">
+          <div class="nano-content">
+            <div class="logo-container">
+              <span class="logo glyphicon glyphicon-envelope"></span>
+              <a href='{% url "EmailApp:home" %}'>{{appname}}</a>
+            </div>
+            <menu class="menu-segment">
+              <ul>
+                <li><a class="compose-button" href='{% url "EmailApp:newmessage" %}'>NEW MAIL</a></li>
+                <li><a class="compose-button" href='{% url "EmailApp:home" %}'>INBOX ( {{profileInfo.messagesTotal}} )</a></li>
+              </ul>
+            </menu>
+            <div class="bottom-padding"></div>
+          </div>
+        </aside>
+        {% block body %}{% endblock %}
+        <script  src='{% static "js/script.js" %}'></script>
+    </body>
+</html>

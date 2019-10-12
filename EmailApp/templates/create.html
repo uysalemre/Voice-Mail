@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% block title %}Create Email{% endblock %}
+{% block body %}
+<script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<main id="main">
+       <br><br><br>
+       <div class="action-bar">
+        <ul>
+          <li>
+            {% csrf_token %}
+            {% load crispy_forms_tags %}
+            {% crispy form %}
+          </li>
+        </ul>
+       </div>
+</main>
+
+<button id="button" onclick="toggleStartStop()" hidden></button>
+<div style="border:dotted;padding:10px" hidden>
+    <span id="final_span"></span>
+  <span id="interim_span" style="color:grey"></span>
+</div>
+
+<script type="text/javascript">
+  var stringValue;
+  var recognizing;
+  var recognition = new webkitSpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onerror = function(event) {
+    console.error(event);
+    recognition.stop();
+};
+
+recognition.onstart = function() {
+    console.log('Speech recognition service has started');
+};
+
+recognition.onend = function() {
+    console.log('Speech recognition service disconnected');
+    reset();
+    console.log(stringValue);
+    var u = new SpeechSynthesisUtterance();
+    starting();
+};
+
+  recognition.onresult = function (event)
+  {
+    var final = "";
+    var interim = "";
+    for (var i = 0; i < event.results.length; ++i)
+    {
+          if (event.results[i].isFinal)
+          {
+            final += event.results[i][0].transcript;
+          }
+          else
+          {
+            interim += event.results[i][0].transcript;
+          }
+    }
+
+    final_span.innerHTML = final;
+    if(final.includes("open inbox") || final.includes("go to inbox"))
+    {
+        location.replace("{% url 'EmailApp:home' %}");
+    }
+    else if(final.slice(0,8) == "receiver")
+    {
+        console.log(final)
+        replaced = final.replace("receiver","") + "@gmail.com";
+        id_receivers.value = replaced.replace(/\s/g, '');
+        recognition.stop();
+    }
+    else if(final.slice(0,7)=="subject")
+    {
+        id_subject.value = final.replace("subject","");
+        recognition.stop();
+    }
+    else if(final.slice(0,7)=="message")
+    {
+        id_message.value = final.replace("message","");
+        recognition.stop();
+    }
+    else if(final.slice(0,15) =="send this email")
+    {
+        console.log("submitted");
+        $.ajax(
+                    {
+                      url: "/ajax/submit/",
+                      data:{
+                            receiver: id_receivers.value,
+                            subject: id_subject.value,
+                            message: id_message.value
+                            },
+                            success: function(data)
+                            {
+                                if(data.status=="success")
+                                {
+                                    location.replace("http://127.0.0.1:8000/");
+                                }
+                            }
+        })
+    }
+    else
+    {
+        console.log("Started speech with meaningless words.");
+        recognition.abort();
+    }
+  }
+
+  function reset() {
+    recognizing = false;
+    button.innerHTML = "Click to Speak";
+  }
+
+  function starting()
+  {
+    recognizing = false;
+    button.click();
+  }
+
+  function toggleStartStop()
+  {
+    if (recognizing) {
+      recognition.stop();
+      reset();
+    } else {
+      recognition.start();
+      recognizing = true;
+      button.innerHTML = "Click to Stop";
+      final_span.innerHTML = "";
+      interim_span.innerHTML = "";
+    }
+  }
+  starting();
+</script>
+{% endblock %}

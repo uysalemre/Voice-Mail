@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+{% block title %}{% endblock %}
+{% block body %}
+<main id="main">
+      <div id="main-nano-wrapper" class="nano">
+        <div class="nano-content">
+          <div align="center" >
+            <a>
+              Welcome {{profileInfo.emailAddress}}
+            </a>
+          </div>
+          <br>
+          <ul class="message-list">
+            <li class="unread">
+              <div class="col col-1">
+                    <p class="title">FROM</p>
+              </div>
+              <div class="col col-2">
+                    <div class="subject" >SUBJECT &nbsp;&ndash; &nbsp;<span class="teaser"> MESSAGE PREVIEW ... </span></div>
+                <div class="date">
+                DATE
+                </div>
+              </div>
+            </li>
+            {% for message in allMessages %}
+            <li class="unread">
+              <a href="{% url 'EmailApp:readmail' messageid=message.threadId %}">
+              <div class="col col-1">
+                {% for m in message.payload.headers %}
+                  {% if m.name|upper == "FROM" or m.name|lower == "from" %}
+                    <p class="title">{{m.value}}</p>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <div class="col col-2">
+                {% for m in message.payload.headers %}
+                  {% if m.name|upper == "SUBJECT" or m.name|lower == "subject" %}
+                    <div class="subject">{{m.value}} &nbsp;&ndash;&nbsp; <span class="teaser">{{message.snippet | truncatewords:"20"}}</span></div>
+                  {% endif %}
+                {% endfor %}
+                <div class="date">
+                  {% for m in message.payload.headers %}
+                  {% if m.name|upper == "DATE" or m.name|lower == "date" %}
+                      {{m.value | truncatewords:"3" }}
+                  {% endif %}
+                {% endfor %}
+                </div>
+              </div>
+              </a>
+            </li>
+            {% endfor %}
+          </ul><!--<a href="#" class="load-more-link">Show more messages</a>-->
+        </div>
+      </div>
+    </main>
+
+
+<button id="button" onclick="toggleStartStop()" hidden></button>
+<div style="border:dotted;padding:10px" hidden>
+  <span id="final_span"></span>
+  <span id="interim_span" style="color:grey"></span>
+</div>
+
+<script type="text/javascript">
+  var stringValue;
+  var recognizing;
+  var recognition = new webkitSpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.continuous = true;
+  recognition.interimResults = false;
+
+  recognition.onerror = function(event) {
+    console.error(event);
+    recognition.stop();
+};
+
+recognition.onstart = function() {
+    console.log('Speech recognition service has started');
+};
+
+recognition.onend = function() {
+    console.log('Speech recognition service disconnected');
+    reset();
+    console.log(stringValue);
+    var u = new SpeechSynthesisUtterance();
+    if(stringValue){
+      if(stringValue.message != "error")
+      {
+          u.text = stringValue.message;
+          u.lang = 'en-US';
+          u.rate = 0.9;
+          speechSynthesis.speak(u);
+      }
+      if(stringValue.url)
+      {
+        location.replace(stringValue.url);
+      }
+    }
+    starting();
+};
+
+  recognition.onresult = function (event)
+  {
+    var final = "";
+    var interim = "";
+    for (var i = 0; i < event.results.length; ++i)
+    {
+          if (event.results[i].isFinal)
+          {
+            final += event.results[i][0].transcript;
+          }
+          else
+          {
+            interim += event.results[i][0].transcript;
+          }
+    }
+
+    final_span.innerHTML = final;
+    $.ajax(
+            {
+              type:"GET",
+              url: "/ajax/recognized/",
+              data:{
+                    post_id: final
+                    },
+                    success: function(data)
+                    {
+                      console.log(data);
+                      stringValue=data;
+                      recognition.stop();
+                    }
+    })
+    interim_span.innerHTML = interim;
+  }
+
+  function reset() {
+    recognizing = false;
+    button.innerHTML = "Click to Speak";
+  }
+
+  function starting()
+  {
+    recognizing = false;
+    button.click();
+  }
+
+  function toggleStartStop()
+  {
+    if (recognizing) {
+      recognition.stop();
+      reset();
+    } else {
+      recognition.start();
+      recognizing = true;
+      button.innerHTML = "Click to Stop";
+      final_span.innerHTML = "";
+      interim_span.innerHTML = "";
+    }
+  }
+  starting();
+</script>
+{% endblock %}
