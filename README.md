@@ -79,7 +79,7 @@ Note that; you must specify your application running port as 8000 because we use
     Send an email -> Goes to email creation page
     Go to inbox -> Goes to inbox
     Open inbox -> Goes to inbox 
-    Read email with number <say a number> -> Goes to Read Email Page
+    Open email with number <say a number> -> Goes to Read Email Page
 
 #### *Commands That Application Understands For Email Creation Page*
 
